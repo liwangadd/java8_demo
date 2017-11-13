@@ -1,18 +1,16 @@
 package com.java8.chap5;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class PuttingIntoPractice {
-    public static void main(String... args){
+    public static void main(String... args) {
         Trader raoul = new Trader("Raoul", "Cambridge");
-        Trader mario = new Trader("Mario","Milan");
-        Trader alan = new Trader("Alan","Cambridge");
-        Trader brian = new Trader("Brian","Cambridge");
+        Trader mario = new Trader("Mario", "Milan");
+        Trader alan = new Trader("Alan", "Cambridge");
+        Trader brian = new Trader("Brian", "Cambridge");
 
         List<Transaction> transactions = Arrays.asList(
                 new Transaction(brian, 2011, 300),
@@ -29,10 +27,14 @@ public class PuttingIntoPractice {
         tr2011.forEach(System.out::println);
         System.out.println();
 
-        List<String> cities = transactions.stream()
+//        List<String> cities = transactions.stream()
+//                .map(transaction -> transaction.getTrader().getCity())
+//                .distinct()
+//                .collect(Collectors.toList());
+        // 使用collectors.toSet()函数生成set集合，可以去掉distinct()
+        Set<String> cities = transactions.stream()
                 .map(transaction -> transaction.getTrader().getCity())
-                .distinct()
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         cities.forEach(System.out::println);
         System.out.println();
 
@@ -44,12 +46,19 @@ public class PuttingIntoPractice {
         traders.forEach(System.out::println);
         System.out.println();
 
+        // 使用字符串链接函数效率不高
+//        String traderStr = transactions.stream()
+//                .map(transaction -> transaction.getTrader())
+//                .map(trader -> trader.getName())
+//                .distinct()
+//                .sorted()
+//                .reduce("", (n1, n2)->n1+" "+n2);
+        // joining内部会自动使用StringBuilder
         String traderStr = transactions.stream()
-                .map(transaction -> transaction.getTrader())
-                .map(trader -> trader.getName())
+                .map(transaction -> transaction.getTrader().getName())
                 .distinct()
                 .sorted()
-                .reduce("", (n1, n2)->n1+" "+n2);
+                .collect(Collectors.joining());
         System.out.println(traderStr);
         System.out.println();
 
@@ -71,8 +80,11 @@ public class PuttingIntoPractice {
         System.out.println(max);
         System.out.println();
 
+//        Optional<Transaction> minTransaction = transactions.stream()
+//                .reduce((t1, t2) -> t1.getValue() > t2.getValue() ? t2 : t1);
+//        流支持min和max方法，接受一个Comparator作为参数，指定计算最小或最大值要比较哪个键值
         Optional<Transaction> minTransaction = transactions.stream()
-                .reduce((t1, t2) -> t1.getValue() > t2.getValue() ? t2 : t1);
+                .min(Comparator.comparing(Transaction::getValue));
         minTransaction.ifPresent(System.out::println);
     }
 }
