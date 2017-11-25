@@ -40,7 +40,7 @@ public class BestPriceFinder {
 
     public List<String> findPricesFutures(String product) {
         List<CompletableFuture<String>> priceFutures = findPricesStream(product).collect(Collectors.toList());
-        priceFutures.stream().map(CompletableFuture::join)
+        return priceFutures.stream().map(CompletableFuture::join)
                 .collect(Collectors.toList());
     }
 
@@ -51,7 +51,12 @@ public class BestPriceFinder {
                 .map(future -> future.thenCompose(quote -> CompletableFuture.supplyAsync(() -> Discount.applyDiscount(quote), executor)));
     }
 
-    public void printPirceStream(String product){
-        
+    public void printPriceStream(String product){
+        long start = System.nanoTime();
+        CompletableFuture[] futures = findPricesStream(product)
+                .map(f->f.thenAccept(s-> System.out.println(s+" (done in " + ((System.nanoTime() - start)/1000000) + "msecs)")))
+                .toArray(size->new CompletableFuture[size]);
+        CompletableFuture.allOf(futures).join();
+        System.out.println("All shops have now responded in " + ((System.nanoTime() - start)/1000000)+" msecs");
     }
 }
